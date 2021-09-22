@@ -1,0 +1,21 @@
+name: SketchbookTiffConverter
+version: "1.0"
+author: Phil Spindler <aero530@gmail.com>
+about: This is a command line program that will convert a single tiff file or directory of tiff files that were created using Autodesk Sketchbook and convert them to Open Raster images (ora) so they can be opened / modified using other software (such as Gimp or Krita).
+args:
+    - path:
+        short: p
+        long: path
+        help: Path of the tiff file or directory of tiff files to convert
+        takes_value: true
+        required: true
+    - layer:
+        short: l
+        long: layer
+        help: Exports layers of each file processed as tiff files in addition to exporting the ora file (helpful if a file doesn't convert correctly for some reason). Note that these are the raw tiff layers as stored by Sketchbook so they are flipped vertically, in BGRA (instead of standard RGBA), & the rgb values are premultiplied by the alpha channel value.
+        required: false
+    - verbose:
+        short: v
+        help: Sets the level of verbosity (v, vv, vvv).  Increasing the number of v's is helpful for debug if a file doesn't convert correctly.
+        multiple: true
+        required: false

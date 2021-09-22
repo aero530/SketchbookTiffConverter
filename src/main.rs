@@ -1,32 +1,67 @@
-// https://www.awaresystems.be/imaging/tiff/tifftags/docs/alias.html
-// Convert BGRA 3 bit frame from DeckLink to TIF formatted unsigned char buffer
-// Tiff overview: http://www.fileformat.info/format/tiff/egff.htm
-// Tiff spec : https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf
-// https://www.awaresystems.be/imaging/tiff/tifftags/rowsperstrip.html
-//
-// The TIFF buffer composed here is organized into three sections.  The first section is the image file header (IFH).
-// The second section is the image data.  The third section is the image file directory (IFD).
-//
-// The TIFF header is 8 bytes long.  The first 2 bytes define the byte order. (0x49 0x49 == little-endian)
-// The second two bytes are magic numbers that define the buffer as a TIFF file.
-// The last four bytes set the byte offset of the first image file directory (IFD).
-//
-// The data section includes the bytes used to describe the pixel color values.  The TIFF buffer generated
-// here is uncompressed pixel data.
-//
-// The IFD includes the list of tags and the tag data.  In a TIFF file, tags are used to define atributes of the image.
+//! Sketchbook Tiff to Open Raster Converter
+//! 
+//! This is a command line program that will convert a single tiff file or directory of tiff files
+//! that were created using Autodesk Sketchbook and convert them to Open Raster images (ora) so they 
+//! can be opened / modified using other software (such as Gimp or Krita).  Most importantly,
+//! the layer information is preserved.
+//! 
+//! Tiff files are used as a storage mechanism for Autodesk Sketchbook images.  Normally tiff files
+//! do not include layer information (ie they are single layer) but they do allow somewhat arbitrary data
+//! to be stored in them by including multiple IFDs (image file directory) in a single image file or by 
+//! including additional data in Tags (which are stored inside IFDs).  Sketchbook takes advantage of this
+//! by storing a composite version of the image (all the layers merged) as the main image in the tiff file
+//! and putting all the layers (and thumbnail) in different IFDs inside the IFD of the main composite image.
+//! This way, any program can open the tiff file and get the correct image, but if it doesn't support Sketchbook's
+//! specific way of manipulating tiffs for layers, then only the composite image shows up (ie the layers are lost).
+//! As best I could find, there are no applications (other than Sketchbook) that support this tiff format.
+//! While this isn't a 'normal' way to store layers, if what you are doing is documented its just as valid as 
+//! anything else.  There is limited documentation about this format (noteably none from Autodesk directly) but 
+//! https://www.awaresystems.be/imaging/tiff/tifftags/docs/alias.html does document the format allowing 
+//! for us to get all the layer information from the image as well.
 
-use std::env;
+//use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
 
+use log::{info, trace, LevelFilter};
+
+#[macro_use]
+extern crate clap;
+use clap::App;
+
 use skora::convert_file;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let args: Vec<String> = env::args().collect();
-    let path_string = args[1].clone();
+    
+    // Parse the program input arguments
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+    let path_string = matches.value_of("path").unwrap().to_string();
+    let verbose = matches.occurrences_of("verbose");
+    let export_tiff = matches.is_present("layer");
 
+    // Initialize the logging environment
+    // If the specified `log_level` is not one of `off`, `error`, `warn`, `info`, `debug`, or `trace`.
+    let log_level_str = match verbose {
+        0 => "error",
+        1 => "info",
+        2 => "debug",
+        3 => "trace",
+        _ => "error",
+    };
+    
+    let log_level = log_level_str
+        .parse::<LevelFilter>()
+        .expect("Unable to parse log level");
+    env_logger::builder()
+        .filter(Some("sketchbook_tiff_converter"), log_level)
+        .filter(Some("sketchbook-tiff-converter"), log_level)
+        .filter(Some("SketchbookTiffConverter"), log_level)
+        .filter(Some("skora"), log_level)
+        .init();
+
+    // Process the input path
     let mut paths = Vec::new();
     match path_string.ends_with(".tif") | path_string.ends_with(".tiff") {
         true => paths.push(path_string),
@@ -42,13 +77,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     }
-    println!("path {:?}", paths);
+
+    trace!("Paths {:#?}",paths);
 
     for file_path_string in paths {
-        println!();
-        println!("Processing file {}", file_path_string);
-
-        convert_file(file_path_string)?;
+        info!("Processing file {}", file_path_string);
+        convert_file(file_path_string, export_tiff)?;
     }
 
     Ok(())
