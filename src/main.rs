@@ -20,9 +20,8 @@ use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
-// extern crate num_derive;
 
-use skora;
+use skora::convert_file;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
@@ -46,10 +45,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("path {:?}", paths);
 
     for file_path_string in paths {
-        println!("");
+        println!();
         println!("Processing file {}", file_path_string);
 
-        skora::convert_file(file_path_string)?;
+        convert_file(file_path_string)?;
     }
 
     Ok(())
