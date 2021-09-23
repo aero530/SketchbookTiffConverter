@@ -2,15 +2,16 @@
 name = "sketchbook-tiff-converter"
 version = "0.1.0"
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "Apache-2.0"
+description = "This is a command line program that will convert a single tiff file or directory of tiff files that were created using Autodesk Sketchbook and convert them to Open Raster images (ora) so they  can be opened / modified using other software (such as Gimp or Krita).  Most importantly, the layer information is preserved."
+homepage = "https://github.com/aero530/SketchbookTiffConverter"
+repository = "https://github.com/aero530/SketchbookTiffConverter"
+readme = "README.md"
+keywords = ["tiff", "sketchbook", "open-raster", "ora", "openraster"]
+categories = ["multimedia", "multimedia::images", "parsing"]
 
 [dependencies]
 clap = {version = "2.33.3", features = ["yaml"]}
 log = "0.4.14"
 env_logger = "0.9.0"
-
-[dependencies.skora]
-#git = "https://github.com/aero530/skora.git"
-#branch = "main"
-path = "../skora"
+skora = "0.1.0"

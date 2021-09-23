@@ -2,7 +2,7 @@
 
 Convert Sketchbook Tiff Files to Open Raster Images and retain layer information.
 
-This is a command line program that will convert a single tiff file or directory of tiff files that were created using Autodesk Sketchbook and convert them to Open Raster images (ora) so they can be opened / modified using other software (such as Gimp or Krita).  Most importantly, the layer information is preserved.
+This is a command line program that will convert a single tiff file or directory of tiff files that were created using Autodesk Sketchbook to Open Raster images (ora).  [Open raster](https://www.openraster.org) files can be opened / modified using other software (such as Gimp or Krita).  Most importantly, this application preserves layer information.
 
 ## Using the application ##
 
@@ -48,7 +48,9 @@ Otherwise you can give the application the location of a single tiff or a direct
 
 ## What's special about Sketchbook Tiffs? ##
 
-Tiff files are used as a storage mechanism for Autodesk Sketchbook images.  Normally tiff files do not include layer information (ie they are single layer) but they do allow somewhat arbitrary data to be stored in them by including multiple IFDs (image file directory) in a single image file or by including additional data in Tags (which are stored inside IFDs).  Sketchbook takes advantage of this by storing a composite version of the image (all the layers merged) as the main image in the tiff file and putting all the layers (and thumbnail) in different IFDs inside the IFD of the main composite image.  This way, any program can open the tiff file and get the correct image, but if it doesn't support Sketchbook's specific way of manipulating tiffs for layers, then only the composite image shows up (ie the layers are lost).  As best I could find, there are no applications (other than Sketchbook) that support this tiff format.  While this isn't a 'normal' way to store layers, if what you are doing is documented its just as valid as anything else.  There is limited documentation about this format (noteably none from Autodesk directly) but https://www.awaresystems.be/imaging/tiff/tifftags/docs/alias.html does document the format allowing for us to get all the layer information from the image as well.
+Tiff files are used as a storage mechanism for Autodesk Sketchbook images.  Normally tiff files do not include layer information (ie they are single layer) but they do allow somewhat arbitrary data to be stored in them by including multiple IFDs (image file directory) in a single image file or by including additional data in Tags (which are stored inside IFDs).  Sketchbook takes advantage of this by storing a composite version of the image (all the layers merged) as the main image in the tiff file and putting all the layers (and thumbnail) in different IFDs inside the IFD of the main composite image.  This way, any program can open the tiff file and get the correct image, but if it doesn't support Sketchbook's specific way of manipulating tiffs for layers, then only the composite image shows up (ie the layers are lost).
+
+As best I could find, there are no applications (other than Sketchbook) that support this tiff format.  While this isn't a 'normal' way to store layers, if what you are doing is documented its just as valid as anything else.  As it turns out there is limited documentation about this format (noteably none from Autodesk directly).  The tag used to specify this proprietary format is called `Alias Layer Metadata` and there is a bit of documentation for the image format at [Aware Systems](https://www.awaresystems.be/imaging/tiff/tifftags/docs/alias.html).
 
 ## Dev Setup ##
 

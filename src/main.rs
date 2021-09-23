@@ -1,25 +1,41 @@
 //! Sketchbook Tiff to Open Raster Converter
-//! 
+//!
 //! This is a command line program that will convert a single tiff file or directory of tiff files
-//! that were created using Autodesk Sketchbook and convert them to Open Raster images (ora) so they 
+//! that were created using Autodesk Sketchbook and convert them to Open Raster images (ora) so they
 //! can be opened / modified using other software (such as Gimp or Krita).  Most importantly,
 //! the layer information is preserved.
-//! 
+//!
 //! Tiff files are used as a storage mechanism for Autodesk Sketchbook images.  Normally tiff files
 //! do not include layer information (ie they are single layer) but they do allow somewhat arbitrary data
-//! to be stored in them by including multiple IFDs (image file directory) in a single image file or by 
+//! to be stored in them by including multiple IFDs (image file directory) in a single image file or by
 //! including additional data in Tags (which are stored inside IFDs).  Sketchbook takes advantage of this
 //! by storing a composite version of the image (all the layers merged) as the main image in the tiff file
 //! and putting all the layers (and thumbnail) in different IFDs inside the IFD of the main composite image.
 //! This way, any program can open the tiff file and get the correct image, but if it doesn't support Sketchbook's
 //! specific way of manipulating tiffs for layers, then only the composite image shows up (ie the layers are lost).
 //! As best I could find, there are no applications (other than Sketchbook) that support this tiff format.
-//! While this isn't a 'normal' way to store layers, if what you are doing is documented its just as valid as 
-//! anything else.  There is limited documentation about this format (noteably none from Autodesk directly) but 
-//! https://www.awaresystems.be/imaging/tiff/tifftags/docs/alias.html does document the format allowing 
+//! While this isn't a 'normal' way to store layers, if what you are doing is documented its just as valid as
+//! anything else.  There is limited documentation about this format (noteably none from Autodesk directly) but
+//! <https://www.awaresystems.be/imaging/tiff/tifftags/docs/alias.html> does document the format allowing
 //! for us to get all the layer information from the image as well.
+//!
+//!
+//! ## USAGE ##
+//! ```bash
+//! > sketchbook-tiff-converter.exe [FLAGS] --path <path>
+//! ```
+//! ## FLAGS ##
+//!
+//! * -h, --help : Prints help information
+//! * -l, --layer : Exports layers of each file processed as tiff files in addition to exporting the ora file (helpful if a file doesn't convert correctly for some reason). Note that these are the raw tiff layers as stored by Sketchbook so they are flipped vertically, in BGRA (instead of standard RGBA), & the rgb values are premultiplied by the alpha channel value.
+//! * -V, --version : Prints version information
+//! * -v : Sets the level of verbosity (v, vv, vvv).  Increasing the number of v's is helpful for debug if a file doesn't convert correctly.
+//!
+//! ## OPTIONS ##
+//!
+//! * -p, --path <path>  : Path of the tiff file or directory of tiff files to convert
+//!
 
-//use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
@@ -33,7 +49,6 @@ use clap::App;
 use skora::convert_file;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    
     // Parse the program input arguments
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
@@ -50,7 +65,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         3 => "trace",
         _ => "error",
     };
-    
+
     let log_level = log_level_str
         .parse::<LevelFilter>()
         .expect("Unable to parse log level");
@@ -78,7 +93,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    trace!("Paths {:#?}",paths);
+    trace!("Paths {:#?}", paths);
 
     for file_path_string in paths {
         info!("Processing file {}", file_path_string);
